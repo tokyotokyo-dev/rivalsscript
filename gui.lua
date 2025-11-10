@@ -7,7 +7,9 @@
             local camera = dependencies.camera
             local setUnloadScript = dependencies.setUnloadScript
             local saveConfig = dependencies.saveConfig
+            local loadConfig = dependencies.loadConfig
             local updateESP = dependencies.updateESP
+            local updateOutline = dependencies.updateOutline
             local Color3_new = dependencies.Color3_new
             local Color3_fromRGB = dependencies.Color3_fromRGB
             local TweenService = dependencies.TweenService
@@ -27,6 +29,11 @@
             local getBoxEspEnabled = dependencies.getBoxEspEnabled
             local setBoxEspEnabled = dependencies.setBoxEspEnabled
 
+            local getOutlineEnabled = dependencies.getOutlineEnabled
+            local setOutlineEnabled = dependencies.setOutlineEnabled
+            local getOutlineColor = dependencies.getOutlineColor
+            local setOutlineColor = dependencies.setOutlineColor
+
             local getAimEnabled = dependencies.getAimEnabled
             local setAimEnabled = dependencies.setAimEnabled
             local getAimFov = dependencies.getAimFov
@@ -39,6 +46,13 @@
             local setAimKeyBinding = dependencies.setAimKey
 
             local currentlyDraggingSlider = nil
+            local refreshCallbacks = {}
+
+            local function registerRefresh(callback)
+                if type(callback) == "function" then
+                    table.insert(refreshCallbacks, callback)
+                end
+            end
 
             print("GUI Load: Creating ScreenGui...")
             local successGui, gui = pcall(Instance.new, "ScreenGui")
@@ -93,7 +107,7 @@
                 closeButton.Position = UDim2.new(1, -44, 0.5, -16)
                 closeButton.BackgroundColor3 = Color3_fromRGB(60, 60, 60)
                 closeButton.TextColor3 = Color3_fromRGB(255, 255, 255)
-                closeButton.Text = "✕"
+                closeButton.Text = "X"
                 closeButton.Font = Enum.Font.GothamBold
                 closeButton.TextSize = 16
                 closeButton.AutoButtonColor = false
@@ -294,6 +308,12 @@
 
                 local state = (getter and getter()) or false
                 local function refresh()
+                    if getter then
+                        local ok, result = pcall(getter)
+                        if ok and type(result) == "boolean" then
+                            state = result
+                        end
+                    end
                     if state then
                         track.BackgroundColor3 = Color3_fromRGB(0, 170, 0)
                         knob.Position = UDim2.new(0.5, 0, 0, 0)
@@ -311,9 +331,18 @@
                     if onChange then pcall(onChange) end
                     saveConfig()
                 end)
+
+                registerRefresh(function()
+                    local prevState = state
+                    refresh()
+                    if prevState ~= state and setter and getter then
+                        -- keep internal state in sync without invoking setter twice
+                        -- no action needed
+                    end
+                end)
             end
 
-            local function addSlider(parent, labelText, value, minValue, maxValue, onValueChanged)
+            local function addSlider(parent, labelText, valueOrGetter, minValue, maxValue, onValueChanged)
                 local container = Instance.new("Frame", parent)
                 container.Size = UDim2.new(1, -30, 0, 54)
                 container.BackgroundTransparency = 1
@@ -325,7 +354,18 @@
                 label.TextSize = 14
                 label.TextXAlignment = Enum.TextXAlignment.Left
                 label.TextColor3 = Color3_fromRGB(220, 220, 220)
-                label.Text = string.format(labelText, value)
+                local function resolveValue()
+                    if type(valueOrGetter) == "function" then
+                        local ok, result = pcall(valueOrGetter)
+                        if ok then
+                            return result
+                        end
+                        return 0
+                    end
+                    return valueOrGetter
+                end
+
+                label.Text = string.format(labelText, resolveValue())
 
                 local track = Instance.new("Frame", container)
                 track.Size = UDim2.new(1, -20, 0, 10)
@@ -373,15 +413,27 @@
                     currentlyDraggingSlider = slider
                 end)
 
-                slider:Update(value, true)
-                return container
+                slider:Update(resolveValue(), true)
+
+                registerRefresh(function()
+                    slider:Update(resolveValue(), true)
+                end)
+                return slider
             end
 
             local function addColorSlider(parent, labelPrefix, getter, setter, channel, previewCallback, onUpdated)
-                local currentColor = getter()
-                local value = math.clamp(component(currentColor, channel) * 255, 0, 255)
-                local slider = addSlider(parent, labelPrefix .. "%.0f", value, 0, 255, function(v)
+                local function currentChannelValue()
                     local color = getter()
+                    if typeof(color) ~= "Color3" then
+                        color = Color3_new(1, 1, 1)
+                    end
+                    return math.clamp(component(color, channel) * 255, 0, 255)
+                end
+                local slider = addSlider(parent, labelPrefix .. "%.0f", currentChannelValue, 0, 255, function(v)
+                    local color = getter()
+                    if typeof(color) ~= "Color3" then
+                        color = Color3_new(1, 1, 1)
+                    end
                     local r, g, b = color.R, color.G, color.B
                     if channel == "r" then
                         r = v / 255
@@ -395,18 +447,22 @@
                     if onUpdated then onUpdated() end
                     saveConfig()
                 end)
+                registerRefresh(function()
+                    slider:Update(currentChannelValue(), true)
+                    if previewCallback then previewCallback() end
+                end)
                 return slider
             end
 
             local function buildAimbotTab(frame)
                 addHeader(frame, "Aimbot")
                 addToggle(frame, "Aimbot Enabled", getAimEnabled, setAimEnabled, updateFov)
-                addSlider(frame, "FOV: %.0f", getAimFov(), 10, 300, function(v)
+                addSlider(frame, "FOV: %.0f", getAimFov, 10, 300, function(v)
                     setAimFov(v)
                     updateFov()
                     saveConfig()
                 end)
-                addSlider(frame, "Smoothness: %.2f", getAimSmoothness(), 0.05, 0.99, function(v)
+                addSlider(frame, "Smoothness: %.2f", getAimSmoothness, 0.05, 0.99, function(v)
                     setAimSmoothness(v)
                     saveConfig()
                 end)
@@ -426,6 +482,9 @@
                     targetButton.Text = "Target: " .. nextTarget
                 saveConfig()
             end)
+                registerRefresh(function()
+                    targetButton.Text = "Target: " .. getAimTarget()
+                end)
             end
 
             local function buildEspTab(frame)
@@ -454,34 +513,69 @@
                 addColorSlider(frame, "R: ", getEspBoxColor, setEspBoxColor, "r", refresh, updateESP)
                 addColorSlider(frame, "G: ", getEspBoxColor, setEspBoxColor, "g", refresh, updateESP)
                 addColorSlider(frame, "B: ", getEspBoxColor, setEspBoxColor, "b", refresh, updateESP)
+
+                addHeader(frame, "Outline")
+                addToggle(frame, "Outline Enabled", getOutlineEnabled, setOutlineEnabled, updateOutline)
+
+                local outlinePreview = Instance.new("Frame", frame)
+                outlinePreview.Size = UDim2.new(0, 40, 0, 20)
+                outlinePreview.BackgroundColor3 = getOutlineColor()
+                outlinePreview.BorderSizePixel = 0
+                Instance.new("UICorner", outlinePreview).CornerRadius = UDim.new(0, 6)
+
+                local function refreshOutlinePreview()
+                    outlinePreview.BackgroundColor3 = getOutlineColor()
+                end
+
+                registerRefresh(refreshOutlinePreview)
+
+                addColorSlider(frame, "R: ", getOutlineColor, setOutlineColor, "r", refreshOutlinePreview, updateOutline)
+                addColorSlider(frame, "G: ", getOutlineColor, setOutlineColor, "g", refreshOutlinePreview, updateOutline)
+                addColorSlider(frame, "B: ", getOutlineColor, setOutlineColor, "b", refreshOutlinePreview, updateOutline)
             end
 
             local function buildConfigTab(frame)
                 addHeader(frame, "Actions")
 
-                local refreshButton = Instance.new("TextButton", frame)
-                refreshButton.Size = UDim2.new(0, 220, 0, 36)
-                refreshButton.BackgroundColor3 = Color3_fromRGB(75, 75, 75)
-                refreshButton.TextColor3 = Color3_fromRGB(255, 255, 255)
-                refreshButton.Font = Enum.Font.GothamSemibold
-                refreshButton.TextSize = 14
-                refreshButton.Text = "Refresh ESP"
-                refreshButton.AutoButtonColor = false
-                Instance.new("UICorner", refreshButton).CornerRadius = UDim.new(0, 8)
-                refreshButton.MouseButton1Click:Connect(function()
+                local function createActionButton(text, color, callback)
+                    local button = Instance.new("TextButton", frame)
+                    button.Size = UDim2.new(0, 220, 0, 36)
+                    button.BackgroundColor3 = color
+                    button.TextColor3 = Color3_fromRGB(255, 255, 255)
+                    button.Font = Enum.Font.GothamSemibold
+                    button.TextSize = 14
+                    button.Text = text
+                    button.AutoButtonColor = false
+                    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+                    button.MouseButton1Click:Connect(callback)
+                    return button
+                end
+
+                createActionButton("Refresh ESP", Color3_fromRGB(75, 75, 75), function()
                     updateESP()
+                    updateOutline()
                 end)
 
-                local unloadButton = Instance.new("TextButton", frame)
-                unloadButton.Size = UDim2.new(0, 220, 0, 36)
-                unloadButton.BackgroundColor3 = Color3_fromRGB(140, 50, 50)
-                unloadButton.TextColor3 = Color3_fromRGB(255, 255, 255)
-                unloadButton.Font = Enum.Font.GothamSemibold
-                unloadButton.TextSize = 14
-                unloadButton.Text = "Unload Script"
-                unloadButton.AutoButtonColor = false
-                Instance.new("UICorner", unloadButton).CornerRadius = UDim.new(0, 8)
-                unloadButton.MouseButton1Click:Connect(function()
+                createActionButton("Load Config", Color3_fromRGB(70, 100, 170), function()
+                    if loadConfig then
+                        loadConfig()
+                    end
+                    for _, callback in ipairs(refreshCallbacks) do
+                        pcall(callback)
+                    end
+                    updateFov()
+                    updateESP()
+                    updateOutline()
+                end)
+
+                createActionButton("Save Config", Color3_fromRGB(55, 120, 55), function()
+                    saveConfig()
+                    updateESP()
+                    updateOutline()
+                    updateFov()
+                end)
+
+                createActionButton("Unload Script", Color3_fromRGB(140, 50, 50), function()
                     setUnloadScript(true)
                 end)
             end
@@ -504,6 +598,9 @@
             switchTo("Aimbot")
 
             updateFov()
+            for _, callback in ipairs(refreshCallbacks) do
+                pcall(callback)
+            end
 
             uis.InputChanged:Connect(function(input)
                 if currentlyDraggingSlider and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
