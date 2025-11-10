@@ -575,17 +575,18 @@
                     updateOutline()
                 end)
 
-            createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
-                    if loadConfig then
-                        loadConfig()
+                createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
+                    if loadConfig and loadConfig() then
+                        for _, callback in ipairs(refreshCallbacks) do
+                            pcall(callback)
+                        end
+                        updateFov()
+                        updateESP()
+                        updateOutline()
+                    else
+                        warn("Load Config: конфиг не найден или не удалось загрузить.")
                     end
-                    for _, callback in ipairs(refreshCallbacks) do
-                        pcall(callback)
-                    end
-                    updateFov()
-                    updateESP()
-                    updateOutline()
-            end, Color3_fromRGB(255, 0, 255))
+                end, Color3_fromRGB(255, 0, 255))
 
                 createActionButton("Save Config", Color3_fromRGB(55, 120, 55), function()
                     saveConfig()
