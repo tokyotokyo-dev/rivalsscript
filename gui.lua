@@ -535,11 +535,21 @@
             end
 
             local function buildConfigTab(frame)
-                addHeader(frame, "Actions")
+                local header = addHeader(frame, "Actions")
+                header.LayoutOrder = 0
 
+                local actionsLayout = Instance.new("UIListLayout", frame)
+                actionsLayout.Padding = UDim.new(0, 8)
+                actionsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                actionsLayout.FillDirection = Enum.FillDirection.Vertical
+                actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+                local nextActionOrder = 10
                 local function createActionButton(text, color, callback)
                     local button = Instance.new("TextButton", frame)
-                    button.Size = UDim2.new(0, 220, 0, 36)
+                    button.Size = UDim2.new(1, -20, 0, 36)
+                    nextActionOrder += 1
+                    button.LayoutOrder = nextActionOrder
                     button.BackgroundColor3 = color
                     button.TextColor3 = Color3_fromRGB(255, 255, 255)
                     button.Font = Enum.Font.GothamSemibold
@@ -556,7 +566,7 @@
                     updateOutline()
                 end)
 
-                createActionButton("Load Config", Color3_fromRGB(70, 100, 170), function()
+                createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
                     if loadConfig then
                         loadConfig()
                     end
