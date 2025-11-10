@@ -8,7 +8,6 @@
             local setUnloadScript = dependencies.setUnloadScript
             local saveConfig = dependencies.saveConfig
             local updateESP = dependencies.updateESP
-            local updateChams = dependencies.updateChams
             local Color3_new = dependencies.Color3_new
             local Color3_fromRGB = dependencies.Color3_fromRGB
             local TweenService = dependencies.TweenService
@@ -27,23 +26,6 @@
             local setEspBoxColor = dependencies.setEspBoxColor
             local getBoxEspEnabled = dependencies.getBoxEspEnabled
             local setBoxEspEnabled = dependencies.setBoxEspEnabled
-
-            local getChamsEnabled = dependencies.getChamsEnabled
-            local setChamsEnabled = dependencies.setChamsEnabled
-            local getChamsVisibleFillColor = dependencies.getChamsVisibleFillColor
-            local setChamsVisibleFillColor = dependencies.setChamsVisibleFillColor
-            local getChamsVisibleOutlineColor = dependencies.getChamsVisibleOutlineColor
-            local setChamsVisibleOutlineColor = dependencies.setChamsVisibleOutlineColor
-            local getChamsHiddenFillColor = dependencies.getChamsHiddenFillColor
-            local setChamsHiddenFillColor = dependencies.setChamsHiddenFillColor
-            local getChamsHiddenOutlineColor = dependencies.getChamsHiddenOutlineColor
-            local setChamsHiddenOutlineColor = dependencies.setChamsHiddenOutlineColor
-            local getChamsPrimaryColor = dependencies.getChamsPrimaryColor
-            local setChamsPrimaryColor = dependencies.setChamsPrimaryColor
-            local getChamsFillTransparency = dependencies.getChamsFillTransparency
-            local setChamsFillTransparency = dependencies.setChamsFillTransparency
-            local getChamsOutlineTransparency = dependencies.getChamsOutlineTransparency
-            local setChamsOutlineTransparency = dependencies.setChamsOutlineTransparency
 
             local getAimEnabled = dependencies.getAimEnabled
             local setAimEnabled = dependencies.setAimEnabled
@@ -250,12 +232,6 @@
                     else
                         warn("[GUI] updateESP is nil!")
                     end
-                elseif tabName == "Chams" then
-                    if updateChams then
-                        pcall(updateChams)
-                    else
-                        warn("[GUI] updateChams is nil!")
-                    end
                 end
             end
 
@@ -422,91 +398,6 @@
                 return slider
             end
 
-            local function createColorPalette(parent, initialColor, onColorSelected)
-                local container = Instance.new("Frame", parent)
-                container.Size = UDim2.new(1, -30, 0, 40)
-                container.BackgroundTransparency = 1
-                container.LayoutOrder = (#parent:GetChildren()) + 1
-
-                -- Ensure initialColor is not nil
-                if not initialColor then
-                    initialColor = Color3.new(1, 1, 1) -- Default to white if nil
-                end
-
-                local palette = Instance.new("Frame", container)
-                palette.Size = UDim2.new(1, 0, 0, 28)
-                palette.Position = UDim2.new(0, 0, 0, 4)
-                palette.BackgroundTransparency = 0
-                palette.BackgroundColor3 = Color3.new(1, 1, 1) -- This will be covered by the gradient
-                palette.BorderSizePixel = 0
-
-                local hueGradient = Instance.new("UIGradient")
-                hueGradient.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0.0, Color3.fromHSV(0, 1, 1)),       -- Red
-                    ColorSequenceKeypoint.new(1 / 6, Color3.fromHSV(1 / 6, 1, 1)),  -- Yellow
-                    ColorSequenceKeypoint.new(1 / 3, Color3.fromHSV(1 / 3, 1, 1)),  -- Green
-                    ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),      -- Cyan
-                    ColorSequenceKeypoint.new(2 / 3, Color3.fromHSV(2 / 3, 1, 1)),  -- Blue
-                    ColorSequenceKeypoint.new(5 / 6, Color3.fromHSV(5 / 6, 1, 1)),  -- Magenta
-                    ColorSequenceKeypoint.new(1.0, Color3.fromHSV(1, 1, 1))         -- Red (wrap-around)
-                })
-                hueGradient.Rotation = 0
-                hueGradient.Parent = palette
-
-                local paletteOutline = Instance.new("UIStroke")
-                paletteOutline.Thickness = 1
-                paletteOutline.Color = Color3_fromRGB(90, 90, 90)
-                paletteOutline.Transparency = 0.2
-                paletteOutline.Parent = palette
-
-                local grabber = Instance.new("Frame", palette)
-                grabber.Size = UDim2.new(0, 10, 0, 10)
-                grabber.AnchorPoint = Vector2.new(0.5, 0.5)
-                grabber.BorderSizePixel = 0
-                grabber.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-                Instance.new("UICorner", grabber).CornerRadius = UDim.new(1, 0)
-
-                local function applyHue(hue, shouldNotify)
-                    hue = math.clamp(hue or 0, 0, 1)
-                    local color = Color3.fromHSV(hue, 1, 1)
-                    grabber.Position = UDim2.new(hue, 0, 0.5, 0)
-                    if shouldNotify and onColorSelected then
-                        onColorSelected(color)
-                    end
-                end
-
-                local function updateFromPosition(x)
-                    local relative = palette.AbsolutePosition
-                    local size = palette.AbsoluteSize
-                    local width = math.max(size.X, 1)
-                    local hue = math.clamp((x - relative.X) / width, 0, 1)
-                    applyHue(hue, true)
-                end
-
-                palette.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        updateFromPosition(input.Position.X)
-                    end
-                end)
-
-                palette.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement then
-                        if uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                            updateFromPosition(input.Position.X)
-                        end
-                    elseif input.UserInputType == Enum.UserInputType.Touch then
-                        updateFromPosition(input.Position.X)
-                    end
-                end)
-
-                task.defer(function()
-                    local initialHue = select(1, initialColor:ToHSV())
-                    applyHue(initialHue, false)
-                end)
-
-                return container
-            end
-
             local function buildAimbotTab(frame)
                 addHeader(frame, "Aimbot")
                 addToggle(frame, "Aimbot Enabled", getAimEnabled, setAimEnabled, updateFov)
@@ -539,13 +430,7 @@
 
             local function buildEspTab(frame)
                 addHeader(frame, "ESP")
-                addToggle(frame, "ESP Enabled", getEspEnabled, setEspEnabled, function(state)
-                    if state then
-                        if getChamsEnabled() then
-                            setChamsEnabled(false)
-                            pcall(updateChams)
-                        end
-                    end
+                addToggle(frame, "ESP Enabled", getEspEnabled, setEspEnabled, function()
                     pcall(updateESP)
                     saveConfig()
                 end)
@@ -571,89 +456,6 @@
                 addColorSlider(frame, "B: ", getEspBoxColor, setEspBoxColor, "b", refresh, updateESP)
             end
 
-            local function safeColorGetter(title, getter)
-                if type(getter) ~= "function" then
-                    warn(string.format("[GUI] getter for '%s' is not a function (got %s)", tostring(title), typeof(getter)))
-                    return Color3.new(1, 1, 1)
-                end
-                local ok, result = pcall(getter)
-                if not ok then
-                    warn(string.format("[GUI] getter for '%s' threw: %s", tostring(title), tostring(result)))
-                    return Color3.new(1, 1, 1)
-                end
-                if typeof(result) ~= "Color3" then
-                    warn(string.format("[GUI] getter for '%s' returned %s instead of Color3", tostring(title), typeof(result)))
-                    return Color3.new(1, 1, 1)
-                end
-                return result
-            end
-
-            local function safeColorSetter(title, setter, color)
-                if type(setter) ~= "function" then
-                    warn(string.format("[GUI] setter for '%s' is not a function (got %s)", tostring(title), typeof(setter)))
-                    return
-                end
-                local ok, err = pcall(setter, color)
-                if not ok then
-                    warn(string.format("[GUI] setter for '%s' failed: %s", tostring(title), tostring(err)))
-                end
-            end
-
-            local function paletteSection(frame, title, getter, setter)
-                addHeader(frame, title)
-                local previewContainer = Instance.new("Frame", frame)
-                previewContainer.Size = UDim2.new(1, -30, 0, 20)
-                previewContainer.BackgroundTransparency = 1
-
-                local preview = Instance.new("Frame", previewContainer)
-                preview.Size = UDim2.new(0, 42, 0, 20)
-                preview.BackgroundColor3 = safeColorGetter(title, getter)
-                preview.BorderSizePixel = 0
-                Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 6)
-
-                local function refreshPreview()
-                    preview.BackgroundColor3 = safeColorGetter(title, getter)
-                end
-
-                createColorPalette(frame, preview.BackgroundColor3, function(color)
-                    safeColorSetter(title, setter, color)
-                    refreshPreview()
-                    pcall(updateChams)
-                    saveConfig()
-                end)
-            end
-
-            local function buildChamsTab(frame)
-                addHeader(frame, "Chams")
-                addToggle(frame, "Chams Enabled", getChamsEnabled, setChamsEnabled, function(state)
-                    if state then
-                        if getEspEnabled() then
-                            setEspEnabled(false)
-                            pcall(updateESP)
-                        end
-                    end
-                    pcall(updateChams)
-                    saveConfig()
-                end)
-
-                paletteSection(frame, "Visible Fill Color", getChamsVisibleFillColor, setChamsVisibleFillColor)
-                paletteSection(frame, "Visible Outline Color", getChamsVisibleOutlineColor, setChamsVisibleOutlineColor)
-                paletteSection(frame, "Hidden Fill Color", getChamsHiddenFillColor, setChamsHiddenFillColor)
-                paletteSection(frame, "Hidden Outline Color", getChamsHiddenOutlineColor, setChamsHiddenOutlineColor)
-                paletteSection(frame, "Primary Chams Color", getChamsPrimaryColor, setChamsPrimaryColor)
-
-                addSlider(frame, "Fill Transparency: %.0f%%", getChamsFillTransparency() * 100, 0, 100, function(v)
-                    setChamsFillTransparency(v / 100)
-                    pcall(updateChams)
-                    saveConfig()
-                end)
-                addSlider(frame, "Outline Transparency: %.0f%%", getChamsOutlineTransparency() * 100, 0, 100, function(v)
-                    setChamsOutlineTransparency(v / 100)
-                    pcall(updateChams)
-                    saveConfig()
-                end)
-            end
-
             local function buildConfigTab(frame)
                 addHeader(frame, "Actions")
 
@@ -663,12 +465,11 @@
                 refreshButton.TextColor3 = Color3_fromRGB(255, 255, 255)
                 refreshButton.Font = Enum.Font.GothamSemibold
                 refreshButton.TextSize = 14
-                refreshButton.Text = "Refresh ESP/Chams"
+                refreshButton.Text = "Refresh ESP"
                 refreshButton.AutoButtonColor = false
                 Instance.new("UICorner", refreshButton).CornerRadius = UDim.new(0, 8)
                 refreshButton.MouseButton1Click:Connect(function()
                     updateESP()
-                    updateChams()
                 end)
 
                 local unloadButton = Instance.new("TextButton", frame)
@@ -688,11 +489,10 @@
             local tabBuilders = {
                 Aimbot = buildAimbotTab,
                 ESP = buildEspTab,
-                Chams = buildChamsTab,
                 Config = buildConfigTab,
             }
 
-            for index, tabName in ipairs({"Aimbot", "ESP", "Chams", "Config"}) do
+            for index, tabName in ipairs({"Aimbot", "ESP", "Config"}) do
                 createTabButton(tabName, index)
                 local contentFrame = createContentFrame()
                 contentFrames[tabName] = contentFrame
