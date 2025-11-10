@@ -563,6 +563,34 @@
                 addColorSlider(frame, "B: ", getEspBoxColor, setEspBoxColor, "b", refresh, updateESP)
             end
 
+            local function safeColorGetter(title, getter)
+                if type(getter) ~= "function" then
+                    warn(string.format("[GUI] getter for '%s' is not a function (got %s)", tostring(title), typeof(getter)))
+                    return Color3.new(1, 1, 1)
+                end
+                local ok, result = pcall(getter)
+                if not ok then
+                    warn(string.format("[GUI] getter for '%s' threw: %s", tostring(title), tostring(result)))
+                    return Color3.new(1, 1, 1)
+                end
+                if typeof(result) ~= "Color3" then
+                    warn(string.format("[GUI] getter for '%s' returned %s instead of Color3", tostring(title), typeof(result)))
+                    return Color3.new(1, 1, 1)
+                end
+                return result
+            end
+
+            local function safeColorSetter(title, setter, color)
+                if type(setter) ~= "function" then
+                    warn(string.format("[GUI] setter for '%s' is not a function (got %s)", tostring(title), typeof(setter)))
+                    return
+                end
+                local ok, err = pcall(setter, color)
+                if not ok then
+                    warn(string.format("[GUI] setter for '%s' failed: %s", tostring(title), tostring(err)))
+                end
+            end
+
             local function paletteSection(frame, title, getter, setter)
                 addHeader(frame, title)
                 local previewContainer = Instance.new("Frame", frame)
@@ -571,16 +599,16 @@
 
                 local preview = Instance.new("Frame", previewContainer)
                 preview.Size = UDim2.new(0, 42, 0, 20)
-                preview.BackgroundColor3 = getter()
+                preview.BackgroundColor3 = safeColorGetter(title, getter)
                 preview.BorderSizePixel = 0
                 Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 6)
 
                 local function refreshPreview()
-                    preview.BackgroundColor3 = getter()
+                    preview.BackgroundColor3 = safeColorGetter(title, getter)
                 end
 
-                createColorPalette(frame, getter(), function(color)
-                    setter(color)
+                createColorPalette(frame, preview.BackgroundColor3, function(color)
+                    safeColorSetter(title, setter, color)
                     refreshPreview()
                     pcall(updateChams)
                     saveConfig()
