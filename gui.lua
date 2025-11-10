@@ -577,13 +577,16 @@
 
                 createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
                     if loadConfig and loadConfig() then
+                        print("Load config success, calling refresh")
                         for _, callback in ipairs(refreshCallbacks) do
                             pcall(callback)
                         end
                         updateFov()
                         updateESP()
                         updateOutline()
+                        print("Refresh done")
                     else
+                        print("Load config failed")
                         warn("Load Config: конфиг не найден или не удалось загрузить.")
                     end
                 end)
