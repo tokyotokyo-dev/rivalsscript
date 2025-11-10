@@ -586,7 +586,7 @@
                     else
                         warn("Load Config: конфиг не найден или не удалось загрузить.")
                     end
-                end, Color3_fromRGB(255, 0, 255))
+                end)
 
                 createActionButton("Save Config", Color3_fromRGB(55, 120, 55), function()
                     saveConfig()
