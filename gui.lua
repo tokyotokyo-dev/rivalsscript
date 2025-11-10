@@ -30,6 +30,14 @@
 
             local getChamsEnabled = dependencies.getChamsEnabled
             local setChamsEnabled = dependencies.setChamsEnabled
+            local getChamsVisibleFillColor = dependencies.getChamsVisibleFillColor
+            local setChamsVisibleFillColor = dependencies.setChamsVisibleFillColor
+            local getChamsVisibleOutlineColor = dependencies.getChamsVisibleOutlineColor
+            local setChamsVisibleOutlineColor = dependencies.setChamsVisibleOutlineColor
+            local getChamsHiddenFillColor = dependencies.getChamsHiddenFillColor
+            local setChamsHiddenFillColor = dependencies.setChamsHiddenFillColor
+            local getChamsHiddenOutlineColor = dependencies.getChamsHiddenOutlineColor
+            local setChamsHiddenOutlineColor = dependencies.setChamsHiddenOutlineColor
             local getChamsPrimaryColor = dependencies.getChamsPrimaryColor
             local setChamsPrimaryColor = dependencies.setChamsPrimaryColor
             local getChamsFillTransparency = dependencies.getChamsFillTransparency
@@ -628,7 +636,12 @@
                     saveConfig()
                 end)
 
-                paletteSection(frame, "Chams Color", getChamsPrimaryColor, setChamsPrimaryColor)
+                paletteSection(frame, "Visible Fill Color", getChamsVisibleFillColor, setChamsVisibleFillColor)
+                paletteSection(frame, "Visible Outline Color", getChamsVisibleOutlineColor, setChamsVisibleOutlineColor)
+                paletteSection(frame, "Hidden Fill Color", getChamsHiddenFillColor, setChamsHiddenFillColor)
+                paletteSection(frame, "Hidden Outline Color", getChamsHiddenOutlineColor, setChamsHiddenOutlineColor)
+                paletteSection(frame, "Primary Chams Color", getChamsPrimaryColor, setChamsPrimaryColor)
+
                 addSlider(frame, "Fill Transparency: %.0f%%", getChamsFillTransparency() * 100, 0, 100, function(v)
                     setChamsFillTransparency(v / 100)
                     pcall(updateChams)
