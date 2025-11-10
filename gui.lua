@@ -552,12 +552,15 @@
                 actionsLayout.FillDirection = Enum.FillDirection.Vertical
                 actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                local function createActionButton(text, color, callback)
+            local function createActionButton(text, color, callback, textColor)
                     local button = Instance.new("TextButton", actionsContainer)
                     button.Size = UDim2.new(1, 0, 0, 36)
                     button.LayoutOrder = actionsContainer:GetChildren() and #actionsContainer:GetChildren() or 0
                     button.BackgroundColor3 = color
-                    button.TextColor3 = Color3_fromRGB(255, 255, 255)
+                if textColor == nil then
+                    textColor = Color3_fromRGB(255, 255, 255)
+                end
+                button.TextColor3 = textColor
                     button.Font = Enum.Font.GothamSemibold
                     button.TextSize = 14
                     button.Text = text
@@ -572,7 +575,7 @@
                     updateOutline()
                 end)
 
-                createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
+            createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
                     if loadConfig then
                         loadConfig()
                     end
@@ -582,7 +585,7 @@
                     updateFov()
                     updateESP()
                     updateOutline()
-                end)
+            end, Color3_fromRGB(255, 0, 255))
 
                 createActionButton("Save Config", Color3_fromRGB(55, 120, 55), function()
                     saveConfig()
