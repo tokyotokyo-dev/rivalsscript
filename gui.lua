@@ -544,7 +544,7 @@
                 actionsContainer.Name = "ActionsContainer"
                 actionsContainer.Size = UDim2.new(1, 0, 0, 100)
                 actionsContainer.BackgroundTransparency = 1
-                actionsContainer.LayoutOrder = 1
+                actionsContainer.LayoutOrder = 2
 
                 local actionsLayout = Instance.new("UIListLayout", actionsContainer)
                 actionsLayout.Padding = UDim.new(0, 8)
@@ -570,14 +570,16 @@
                     return button
                 end
 
-                createActionButton("Refresh ESP", Color3_fromRGB(75, 75, 75), function()
+                local refreshButton = createActionButton("Refresh ESP", Color3_fromRGB(75, 75, 75), function()
                     updateESP()
                     updateOutline()
                 end)
+                refreshButton.LayoutOrder = 1
 
-                createActionButton("Unload Script", Color3_fromRGB(140, 50, 50), function()
+                local unloadButton = createActionButton("Unload Script", Color3_fromRGB(140, 50, 50), function()
                     setUnloadScript(true)
                 end)
+                unloadButton.LayoutOrder = 2
             end
 
             local tabBuilders = {
