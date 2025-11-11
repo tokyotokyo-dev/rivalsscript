@@ -60,7 +60,7 @@
                 warn("GUI Load: Failed to create ScreenGui.", gui)
                 return { mainGui = nil, toggleGuiVisibility = function() end } -- Return dummy table
             end
-            gui.Name = "SaintHubRIvals"
+            gui.Name = "SaintHubRivals"
             gui.ResetOnSpawn = false
 
             print("GUI Load: Waiting for PlayerGui...")
@@ -100,7 +100,7 @@
                 label.TextSize = 22
                 label.TextXAlignment = Enum.TextXAlignment.Left
                 label.TextColor3 = Color3_fromRGB(255, 255, 255)
-                label.Text = "SaintHubRIvals"
+                label.Text = "SaintHubRivals"
 
                 local closeButton = Instance.new("TextButton", bar)
                 closeButton.Size = UDim2.new(0, 32, 0, 32)
@@ -538,13 +538,13 @@
                 frame.Padding = UDim.new(0, 10)
 
                 local header = addHeader(frame, "Actions")
-                header.LayoutOrder = 0
+                header.LayoutOrder = -1
 
                 local actionsContainer = Instance.new("Frame", frame)
                 actionsContainer.Name = "ActionsContainer"
                 actionsContainer.Size = UDim2.new(1, 0, 0, 100)
                 actionsContainer.BackgroundTransparency = 1
-                actionsContainer.LayoutOrder = 1
+                actionsContainer.LayoutOrder = 0
 
                 local actionsLayout = Instance.new("UIListLayout", actionsContainer)
                 actionsLayout.Padding = UDim.new(0, 8)
