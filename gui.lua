@@ -18,10 +18,6 @@
             local setEspEnabled = dependencies.setEspEnabled
             local getEspShowHealth = dependencies.getEspShowHealth
             local setEspShowHealth = dependencies.setEspShowHealth
-            local getEspShowAmmo = dependencies.getEspShowAmmo
-            local setEspShowAmmo = dependencies.setEspShowAmmo
-            local getEspShowWeapon = dependencies.getEspShowWeapon
-            local setEspShowWeapon = dependencies.setEspShowWeapon
             local getEspShowSkeleton = dependencies.getEspShowSkeleton
             local setEspShowSkeleton = dependencies.setEspShowSkeleton
             local getEspBoxColor = dependencies.getEspBoxColor
@@ -495,8 +491,6 @@
                 end)
                 addToggle(frame, "Box ESP", getBoxEspEnabled, setBoxEspEnabled, updateESP)
                 addToggle(frame, "Show Health", getEspShowHealth, setEspShowHealth, updateESP)
-                addToggle(frame, "Show Ammo", getEspShowAmmo, setEspShowAmmo, updateESP)
-                addToggle(frame, "Show Weapon", getEspShowWeapon, setEspShowWeapon, updateESP)
                 addToggle(frame, "Show Skeleton", getEspShowSkeleton, setEspShowSkeleton, updateESP)
 
                 addHeader(frame, "Box Color")
