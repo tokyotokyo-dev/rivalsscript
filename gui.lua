@@ -537,9 +537,6 @@
             local function buildConfigTab(frame)
                 frame.Padding = UDim.new(0, 10)
 
-                local header = addHeader(frame, "Actions")
-                header.LayoutOrder = -1
-
                 local actionsContainer = Instance.new("Frame", frame)
                 actionsContainer.Name = "ActionsContainer"
                 actionsContainer.Size = UDim2.new(1, 0, 0, 100)
@@ -552,10 +549,15 @@
                 actionsLayout.FillDirection = Enum.FillDirection.Vertical
                 actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+                local header = addHeader(actionsContainer, "Actions")
+                header.LayoutOrder = 0
+
+                local nextActionOrder = 1
             local function createActionButton(text, color, callback, textColor)
                     local button = Instance.new("TextButton", actionsContainer)
                     button.Size = UDim2.new(1, 0, 0, 36)
-                    button.LayoutOrder = (actionsContainer:GetChildren() and #actionsContainer:GetChildren() or 0)
+                    button.LayoutOrder = nextActionOrder
+                    nextActionOrder = nextActionOrder + 1
                     button.BackgroundColor3 = color
                 if textColor == nil then
                     textColor = Color3_fromRGB(255, 255, 255)
