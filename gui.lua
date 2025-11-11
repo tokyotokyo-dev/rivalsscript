@@ -537,14 +537,11 @@
             local function buildConfigTab(frame)
                 frame.Padding = UDim.new(0, 10)
 
-                local header = addHeader(frame, "Actions")
-                header.LayoutOrder = 0
-
                 local actionsContainer = Instance.new("Frame", frame)
                 actionsContainer.Name = "ActionsContainer"
                 actionsContainer.Size = UDim2.new(1, 0, 0, 100)
                 actionsContainer.BackgroundTransparency = 1
-                actionsContainer.LayoutOrder = 2
+                actionsContainer.LayoutOrder = 1
 
                 local actionsLayout = Instance.new("UIListLayout", actionsContainer)
                 actionsLayout.Padding = UDim.new(0, 8)
@@ -552,10 +549,13 @@
                 actionsLayout.FillDirection = Enum.FillDirection.Vertical
                 actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+                local header = addHeader(actionsContainer, "Actions")
+                header.LayoutOrder = 0
+
             local function createActionButton(text, color, callback, textColor)
                     local button = Instance.new("TextButton", actionsContainer)
                     button.Size = UDim2.new(1, 0, 0, 36)
-                    button.LayoutOrder = actionsContainer:GetChildren() and #actionsContainer:GetChildren() or 0
+                    button.LayoutOrder = (actionsContainer:GetChildren() and #actionsContainer:GetChildren() or 0) + 1
                     button.BackgroundColor3 = color
                 if textColor == nil then
                     textColor = Color3_fromRGB(255, 255, 255)
@@ -574,12 +574,12 @@
                     updateESP()
                     updateOutline()
                 end)
-                refreshButton.LayoutOrder = 1
+                refreshButton.LayoutOrder = header.LayoutOrder + 1
 
                 local unloadButton = createActionButton("Unload Script", Color3_fromRGB(140, 50, 50), function()
                     setUnloadScript(true)
                 end)
-                unloadButton.LayoutOrder = 2
+                unloadButton.LayoutOrder = refreshButton.LayoutOrder + 1
             end
 
             local tabBuilders = {
