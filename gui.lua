@@ -537,11 +537,14 @@
             local function buildConfigTab(frame)
                 frame.Padding = UDim.new(0, 10)
 
+                local header = addHeader(frame, "Actions")
+                header.LayoutOrder = 0
+
                 local actionsContainer = Instance.new("Frame", frame)
                 actionsContainer.Name = "ActionsContainer"
                 actionsContainer.Size = UDim2.new(1, 0, 0, 100)
                 actionsContainer.BackgroundTransparency = 1
-                actionsContainer.LayoutOrder = 0
+                actionsContainer.LayoutOrder = 1
 
                 local actionsLayout = Instance.new("UIListLayout", actionsContainer)
                 actionsLayout.Padding = UDim.new(0, 8)
@@ -549,10 +552,7 @@
                 actionsLayout.FillDirection = Enum.FillDirection.Vertical
                 actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                local header = addHeader(actionsContainer, "Actions")
-                header.LayoutOrder = 0
-
-                local nextActionOrder = 1
+                local nextActionOrder = 0
             local function createActionButton(text, color, callback, textColor)
                     local button = Instance.new("TextButton", actionsContainer)
                     button.Size = UDim2.new(1, 0, 0, 36)
