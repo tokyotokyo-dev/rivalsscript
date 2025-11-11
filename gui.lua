@@ -542,7 +542,7 @@
 
                 local actionsContainer = Instance.new("Frame", frame)
                 actionsContainer.Name = "ActionsContainer"
-                actionsContainer.Size = UDim2.new(1, 0, 0, 160)
+                actionsContainer.Size = UDim2.new(1, 0, 0, 100)
                 actionsContainer.BackgroundTransparency = 1
                 actionsContainer.LayoutOrder = 1
 
@@ -573,29 +573,6 @@
                 createActionButton("Refresh ESP", Color3_fromRGB(75, 75, 75), function()
                     updateESP()
                     updateOutline()
-                end)
-
-                createActionButton("Load Config", Color3_fromRGB(85, 130, 220), function()
-                    if loadConfig and loadConfig() then
-                        print("Load config success, calling refresh")
-                        for _, callback in ipairs(refreshCallbacks) do
-                            pcall(callback)
-                        end
-                        updateFov()
-                        updateESP()
-                        updateOutline()
-                        print("Refresh done")
-                    else
-                        print("Load config failed")
-                        warn("Load Config: конфиг не найден или не удалось загрузить.")
-                    end
-                end)
-
-                createActionButton("Save Config", Color3_fromRGB(55, 120, 55), function()
-                    saveConfig()
-                    updateESP()
-                    updateOutline()
-                    updateFov()
                 end)
 
                 createActionButton("Unload Script", Color3_fromRGB(140, 50, 50), function()
