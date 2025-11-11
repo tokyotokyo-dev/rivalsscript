@@ -540,29 +540,17 @@
                 local header = addHeader(frame, "Actions")
                 header.LayoutOrder = 0
 
-                local actionsContainer = Instance.new("Frame", frame)
-                actionsContainer.Name = "ActionsContainer"
-                actionsContainer.Size = UDim2.new(1, 0, 0, 100)
-                actionsContainer.BackgroundTransparency = 1
-                actionsContainer.LayoutOrder = 1
-
-                local actionsLayout = Instance.new("UIListLayout", actionsContainer)
-                actionsLayout.Padding = UDim.new(0, 8)
-                actionsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-                actionsLayout.FillDirection = Enum.FillDirection.Vertical
-                actionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-                local nextActionOrder = 0
-            local function createActionButton(text, color, callback, textColor)
-                    local button = Instance.new("TextButton", actionsContainer)
-                    button.Size = UDim2.new(1, 0, 0, 36)
+                local nextActionOrder = 1
+                local function createActionButton(text, color, callback, textColor)
+                    local button = Instance.new("TextButton", frame)
+                    button.Size = UDim2.new(1, -30, 0, 36)
                     button.LayoutOrder = nextActionOrder
                     nextActionOrder = nextActionOrder + 1
                     button.BackgroundColor3 = color
-                if textColor == nil then
-                    textColor = Color3_fromRGB(255, 255, 255)
-                end
-                button.TextColor3 = textColor
+                    if textColor == nil then
+                        textColor = Color3_fromRGB(255, 255, 255)
+                    end
+                    button.TextColor3 = textColor
                     button.Font = Enum.Font.GothamSemibold
                     button.TextSize = 14
                     button.Text = text
